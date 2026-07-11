@@ -92,11 +92,13 @@ def scan():
                 })
         catalog[folder] = items
 
-    # skills are directories containing SKILL.md
+    # skills are directories containing SKILL.md (match the filename
+    # case-insensitively — at least one skill ships SKILL.MD)
     base = COMPONENTS / "skills"
     items = []
     if base.is_dir():
-        for f in sorted(base.rglob("SKILL.md")):
+        skill_files = [f for f in base.rglob("*") if f.is_file() and f.name.lower() == "skill.md"]
+        for f in sorted(skill_files):
             rel = f.parent.relative_to(base)
             items.append({
                 "name": rel.parts[-1],
