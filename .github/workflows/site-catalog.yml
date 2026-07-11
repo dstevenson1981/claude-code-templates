@@ -1,0 +1,39 @@
+name: Update site catalog
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'cli-tool/components/**'
+      - 'scripts/build_site_catalog.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-catalog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Rebuild site catalog
+        run: python3 scripts/build_site_catalog.py
+
+      - name: Commit updated catalog
+        run: |
+          if git diff --quiet docs/site-catalog.json; then
+            echo "Catalog unchanged, nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/site-catalog.json
+          git commit -m "chore: rebuild site catalog [skip ci]"
+          git push
